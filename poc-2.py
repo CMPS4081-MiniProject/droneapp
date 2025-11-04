@@ -19,9 +19,13 @@ while True:
     resized = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
 
     gray = cv2.cvtColor(resized, cv2.COLOR_BGR2GRAY)
-    letter = reader.readtext(gray, detail=0)
+    results = reader.readtext(gray)
 
-    print(f"Detected: {letter}")  # You might want to process/format this output
+    for bbox, text, confidence in results:
+        conf_pct = int(confidence * 100)  # Convert to percent as int
+        print(f"Detected: {text}, Confidence: {conf_pct}%")
+
+    # print(f"Detected: {letter}")  # You might want to process/format this output
 
     cv2.imshow('Frame', frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):
