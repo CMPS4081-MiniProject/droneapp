@@ -5,6 +5,7 @@ import time
 import threading
 import socket
 import numpy as np
+import cv2
 
 Tello.LOGGER.setLevel(logging.ERROR)  # Suppress djitellopy info logs
 h264decoder.disable_logging()
@@ -140,6 +141,9 @@ class VideoDriver:
                 frame = np.fromstring(frame, dtype=np.ubyte, count=len(frame), sep='')
                 frame = (frame.reshape((h, ls // 3, 3)))
                 frame = frame[:, :w, :]
+
+                # Convert from RGB to BGR
+                frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
                 res_frame_list.append(frame)
 
         return res_frame_list
