@@ -30,9 +30,13 @@ class VideoDriver:
         self.socket_video = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # socket for receiving video stream
         self.socket_video.bind((video_ip, self.video_port))
 
-        self.sending_command_thread = threading.Thread(target=self._sendingCommand)
+        self.sending_command_thread = threading.Thread(target=self._send_keepalive)
+        self.sending_command_thread.daemon = True
+
         self.receive_video_thread = threading.Thread(target=self._receive_video_thread)
         self.receive_video_thread.daemon = True
+
+        self.sending_command_thread.start()
         self.receive_video_thread.start()
 
         self.initialized = False
@@ -40,48 +44,55 @@ class VideoDriver:
     def __del__(self):
         """Closes the local socket."""
         self.socket_video.close()
+        self.shutdown()
 
     def initialize(self):
         if not self.initialized:
-            print("drive: Initializing video driver...")
+            print("driver: Initializing video driver...")
 
             # Connect to the drone and start video stream
             self.drone.connect()
             self.drone.streamon()
             self.initialized = True
-            print("Video driver initialized.")
+            print("driver: initialized.")
 
         else:
-            print("Video driver is already initialized.")
+            print("driver: already initialized.")
 
     def shutdown(self):
         if self.initialized:
-            print("Shutting down video driver...")
+            print("driver: shutting down...")
 
             # Stop the video stream
             self.drone.streamoff()
             self.initialized = False
 
-            print("Video driver shut down.")
+            print("driver: closed.")
         else:
-            print("Video driver is not initialized.")
+            print("driver: not initialized.")
+
+    def release(self):
+        self.shutdown()
 
     def read(self):
         if not self.initialized:
-            raise Exception("Video driver is not initialized. Cannot render frame.")
+            raise Exception("driver: not initialized. Cannot render frame.")
         """Return the last frame from camera."""
         if self.frozen:
-            return [0, self.last_frame]
+            return [2, self.last_frame]
         else:
             return [1, self.frame]
 
-    def video_freeze(self, is_frozen=True):
+    def set_freeze(self, is_frozen=True):
         if not self.initialized:
-            raise Exception("Video driver is not initialized. Cannot render frame.")
+            raise Exception("driver: not initialized. Cannot render frame.")
         """Pause video output -- set is_freeze to True"""
         self.frozen = is_frozen
         if is_frozen:
+            print("driver: freezing camera")
             self.last_frame = self.frame
+        else:
+            print("driver: unfreezing camera")
 
     def _receive_video_thread(self):
         """
@@ -126,7 +137,7 @@ class VideoDriver:
 
         return res_frame_list
 
-    def _sendingCommand(self):
+    def _send_keepalive(self):
         """
         start a while loop that sends 'command' to tello every 5 second
         """
@@ -134,3 +145,4 @@ class VideoDriver:
         while True:
             self.drone.connect()
             time.sleep(5)
+            print("driver: Sent keepalive command to Tello")

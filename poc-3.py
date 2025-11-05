@@ -1,21 +1,34 @@
 import cv2
 import easyocr
-# from VideoDriver import VideoDriver
+from VideoDriver import VideoDriver
 
-# camera = VideoDriver()
-# camera.initialize()
-camera = cv2.VideoCapture(0)
+camera = VideoDriver()
+camera.initialize()
+# camera = cv2.VideoCapture(0)
 reader = easyocr.Reader(['en'])
-scale_percent = 40  # e.g., shrink to 50% of original size
+scale_percent = 40  # e.g., shrink to 50% of original
+ack_frozen = False
 
-# print(camera.drone.get_battery())
+print(camera.drone.get_battery())
 
 
 while True:
+
+    key = cv2.waitKey(1) & 0xFF
+    if key == ord('p'):
+        camera.set_freeze(not camera.frozen)
+    elif key == ord('q'):
+        break  # Exit on pressing 'q'
+
     ret, frame = camera.read()
     if not ret:
         print("Failed to grab frame.")
         break
+    if ret == 2:
+        if not ack_frozen:
+            print("Camera is frozen.")
+            is_frozen = True
+        continue
 
     width = int(frame.shape[1] * scale_percent / 100)
     height = int(frame.shape[0] * scale_percent / 100)
@@ -33,8 +46,6 @@ while True:
     # print(f"Detected: {letter}")  # You might want to process/format this output
 
     cv2.imshow('Frame', frame)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break  # Exit on pressing 'q'
 
 # Release resources
 camera.release()
