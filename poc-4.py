@@ -12,12 +12,14 @@ ack_frozen = False
 
 def main():
     # Using:
-    global camera, ack_frozen
+    global camera, ack_frozen, scale_percent
 
     # Next:
     camera = VideoDriver()
     camera.initialize()
     # camera = cv2.VideoCapture(0)
+    if camera.platform == "DRONE":
+        scale_percent = 50  # Upscale the video for better results
 
     print(camera.drone.get_battery())
     while True:
@@ -31,7 +33,7 @@ def main():
         ret, frame = camera.read()
         if not ret:
             print("Failed to grab frame.")
-            break
+            continue
         if ret == 2:
             if not ack_frozen:
                 print("Camera is frozen.")

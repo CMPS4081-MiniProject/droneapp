@@ -1,10 +1,13 @@
 from djitellopy import Tello
 import h264decoder
-from PIL import Image
+import logging
 import time
 import threading
 import socket
 import numpy as np
+
+Tello.LOGGER.setLevel(logging.ERROR)  # Suppress djitellopy info logs
+h264decoder.disable_logging()
 
 '''
 [YES]: stop(void) -> status<OK,FAIL>
@@ -19,6 +22,7 @@ record(int dur, string loc) -> status<OK,FAIL>
 class VideoDriver:
     def __init__(self, config=Tello(), video_ip='0.0.0.0'):
         self.drone = config
+        self.platform = "DRONE"  # For compatibility with other drivers
         self.frame = None  # frame read from h264decoder
         self.last_frame = None  # last frame when video is frozen
 
@@ -81,6 +85,9 @@ class VideoDriver:
         if self.frozen:
             return [2, self.last_frame]
         else:
+            if self.frame is None:
+                # This is the standard way to indicate no frame available yet
+                return [0, 0]
             return [1, self.frame]
 
     def set_freeze(self, is_frozen=True):
