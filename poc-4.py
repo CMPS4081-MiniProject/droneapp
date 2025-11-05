@@ -1,3 +1,5 @@
+print ("program: Loading ML models...")
+
 import cv2
 import easyocr
 from VideoDriver import VideoDriver
@@ -10,7 +12,7 @@ ack_frozen = False
 
 def main():
     # Using:
-    global camera
+    global camera, ack_frozen
 
     # Next:
     camera = VideoDriver()
@@ -33,7 +35,7 @@ def main():
         if ret == 2:
             if not ack_frozen:
                 print("Camera is frozen.")
-                is_frozen = True
+                ack_frozen = True
             continue
 
         width = int(frame.shape[1] * scale_percent / 100)
@@ -58,9 +60,10 @@ def main():
     cv2.destroyAllWindows()
 
 
-
 try:
     main()
 except KeyboardInterrupt:
-    camera.release()
+    # Checks if camera is an instance of VideoDriver
+    if isinstance(camera, VideoDriver):
+        camera.release()
     cv2.destroyAllWindows()
