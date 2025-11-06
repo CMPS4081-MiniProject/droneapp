@@ -77,8 +77,8 @@ def main():
                     if not action_in_progress:
                         action_queue.put((text, frame.copy()))
                         print(f"Queued action for: {text}")
-                    else:
-                        print(f"Ignored {text} - action already in progress")
+                    # else:
+                    #     print(f"Ignored {text} - action already in progress")
 
         cv2.imshow('Frame', frame)
 
@@ -111,7 +111,8 @@ def thread__handle_actions():
                     print("Action for A - Completed")
                 case 'B':
                     print("Action for B - Starting")
-                    drone.rotate_clockwise(180)
+                    drone.rotate_clockwise(90)
+                    drone.move_up(30)
                     print("Should take a photo now")
                     # Save the current frame as an image
                     timestamp = int(time.time())
@@ -121,6 +122,8 @@ def thread__handle_actions():
                     cv2.imwrite(filename, frame)
                     print(f"Photo saved: {filename}")
                     camera.set_freeze(False)
+                    time.sleep(5)
+                    drone.move_forward(180)
                     print("Action for B - Completed")
                 case 'C':
                     print("Action for C - Starting")
