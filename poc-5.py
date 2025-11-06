@@ -87,6 +87,12 @@ def main():
                         camera.set_freeze(False)
                     case 'C':
                         print("Action for C")
+                        drone.land()
+                        # Kill the height guard
+                        if height_guard is not None:
+                            height_guard.stop()
+                            height_guard = None
+                        has_taken_off = False
                     case _:
                         print("No action for this letter")
 
@@ -141,6 +147,7 @@ def thread__wait_key():
                 if height_guard is not None:
                     height_guard.stop()
                     height_guard = None
+                has_taken_off = False
             elif key == ord('e'):
                 if not has_taken_off:
                     print("error: Take off first.")
