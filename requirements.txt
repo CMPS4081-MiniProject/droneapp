@@ -5,3 +5,4 @@ pillow
 https://github.com/CMPS4081-MiniProject/h264decoder/releases/download/0.0.1/h264decoder-0.0.0-cp312-cp312-win_amd64.whl
 numpy
 djitellopy
+pynput
