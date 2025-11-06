@@ -18,10 +18,12 @@ has_taken_off = False
 height_guard = None
 key_queue = queue.Queue()
 action_queue = queue.Queue()  # Queue for letter-triggered actions
+action_in_progress = False  # Flag to track if action is running
+action_lock = threading.Lock()  # Thread-safe lock for the flag
 
 
 def main():
-    global camera, ack_frozen, scale_percent, drone, has_taken_off, height_guard
+    global camera, ack_frozen, scale_percent, drone, has_taken_off, height_guard, action_in_progress
 
     camera = VideoDriver()
     camera.initialize()
@@ -70,8 +72,13 @@ def main():
             conf_pct = int(confidence * 100)
             print(f"Detected: {text}, Confidence: {conf_pct}%")
             if conf_pct > 80:
-                # Send action to handler thread instead of executing here
-                action_queue.put((text, frame.copy()))
+                # Only queue action if no action is currently running
+                with action_lock:
+                    if not action_in_progress:
+                        action_queue.put((text, frame.copy()))
+                        print(f"Queued action for: {text}")
+                    else:
+                        print(f"Ignored {text} - action already in progress")
 
         cv2.imshow('Frame', frame)
 
@@ -81,7 +88,7 @@ def main():
 
 def thread__handle_actions():
     """Handles letter-triggered actions in a separate thread"""
-    global camera, drone, has_taken_off, height_guard
+    global camera, drone, has_taken_off, height_guard, action_in_progress
 
     while True:
         try:
@@ -89,16 +96,21 @@ def thread__handle_actions():
         except queue.Empty:
             continue
 
+        # Set flag that action is in progress
+        with action_lock:
+            action_in_progress = True
+
         try:
             match text:
                 case 'A':
-                    print("Action for A")
+                    print("Action for A - Starting")
                     drone.rotate_clockwise(360)
                     time.sleep(5)
                     drone.rotate_clockwise(180)
                     drone.move_forward(30)
+                    print("Action for A - Completed")
                 case 'B':
-                    print("Action for B")
+                    print("Action for B - Starting")
                     drone.rotate_clockwise(180)
                     print("Should take a photo now")
                     # Save the current frame as an image
@@ -109,18 +121,30 @@ def thread__handle_actions():
                     cv2.imwrite(filename, frame)
                     print(f"Photo saved: {filename}")
                     camera.set_freeze(False)
+                    print("Action for B - Completed")
                 case 'C':
-                    print("Action for C")
+                    print("Action for C - Starting")
                     drone.land()
                     # Kill the height guard
                     if height_guard is not None:
                         height_guard.stop()
                         height_guard = None
                     has_taken_off = False
+                    print("Action for C - Completed")
                 case _:
                     print("No action for this letter")
         except TelloException as e:
             print(f"Drone error during action: {e}")
+        finally:
+            # Clear flag when action is complete (even if there was an error)
+            with action_lock:
+                action_in_progress = False
+            # Clear the queue of any duplicate detections
+            while not action_queue.empty():
+                try:
+                    action_queue.get_nowait()
+                except queue.Empty:
+                    break
 
 
 def thread__wait_key():
