@@ -146,6 +146,32 @@ def thread__handle_actions():
                             height_guard = None
                         has_taken_off = False
                         print("Action for C - Completed")
+                    case 'D':
+                        print("Action for D - Starting")
+                        drone.flip_back()
+                        print("Action for D - Completed")
+                    case 'E':
+                        print("Action for E - Starting")
+                        drone.move_back(50)
+                        drone.move_left(50)
+                    case 'F':
+                        print("Action for F - Starting")
+                        drone.flip_forward()
+                        print("Action for F - Completed")
+                    case 'G':
+                        print("Action for G - Starting")
+                        drone.flip_forward()
+                        drone.move_forward(40)
+                        drone.flip_forward()
+                        drone.flip_forward()
+                        print("Action for F - Completed")
+                    case 'H':
+                        print("Action for H - Starting")
+                        drone.move_forward(400)
+                        drone.flip_forward()
+                        drone.move_up(150)
+                        drone.emergency()
+                        print("Action for H - Completed")
                     case _:
                         print("No action for this letter")
             except TelloException as e:
