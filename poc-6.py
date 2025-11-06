@@ -71,8 +71,8 @@ def main():
 
         for bbox, text, confidence in results:
             conf_pct = int(confidence * 100)
-            print(f"Detected: {text}, Confidence: {conf_pct}%")
             if conf_pct > 80:
+                print(f"Detected: {text}, Confidence: {conf_pct}%")
                 # Only queue action if no action is currently running
                 with action_lock:
                     if not action_in_progress:
