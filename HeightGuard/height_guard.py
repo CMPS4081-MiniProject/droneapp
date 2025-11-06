@@ -26,4 +26,3 @@ class HeightGuard:
     def stop(self):
         # Stop the thread
         self.maintain_height_thread__stop_event.set()
-

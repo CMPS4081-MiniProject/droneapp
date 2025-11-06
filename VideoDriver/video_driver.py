@@ -7,16 +7,17 @@ import socket
 import numpy as np
 import cv2
 
+# Disable logging for the decoder and tello python driver
 Tello.LOGGER.setLevel(logging.ERROR)  # Suppress djitellopy info logs
-h264decoder.disable_logging()
+h264decoder.disable_logging()         # Supress decoder messages
 
 '''
-[YES]: stop(void) -> status<OK,FAIL>
-freeze(void) -> status<OK,FAIL>
-take_frame(void) -> status<frame,NULL>
-start(void) -> status<OK,FAIL>
-raw(void) -> status<framechunks,NULL>
-record(int dur, string loc) -> status<OK,FAIL>
+[YES - Implemented]:                     stop(void) -> status<OK,FAIL>
+[YES - Through set_freeze]:              freeze(void) -> status<OK,FAIL>
+[YES - Through camera.frame]:            take_frame(void) -> status<frame,NULL>
+[YES - Through initialize]:              start(void) -> status<OK,FAIL>
+[YES - Through read]:                    raw(void) -> status<framechunks,NULL>
+[NO  - Not Implemented/Not needed]:      record(int dur, string loc) -> status<OK,FAIL>
 '''
 
 
@@ -89,6 +90,7 @@ class VideoDriver:
             if self.frame is None:
                 # This is the standard way to indicate no frame available yet
                 return [0, 0]
+            # Return the frame
             return [1, self.frame]
 
     def set_freeze(self, is_frozen=True):

@@ -122,7 +122,7 @@ def thread__handle_actions():
                         # Freeze the frame to avoid motion blur
                         camera.set_freeze(True)
                         # Take the picture
-                        cv2.imwrite(filename, frame)
+                        cv2.imwrite(filename, camera.frame)
                         print(f"Photo saved: {filename}")
                         # Unfreeze
                         camera.set_freeze(False)
