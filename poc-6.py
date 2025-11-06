@@ -89,65 +89,70 @@ def main():
 def thread__handle_actions():
     """Handles letter-triggered actions in a separate thread"""
     global camera, drone, has_taken_off, height_guard, action_in_progress
+    if isinstance(drone, Tello) and isinstance(camera, VideoDriver):
+        while True:
+            try:
+                text, frame = action_queue.get(timeout=0.1)
+            except queue.Empty:
+                continue
 
-    while True:
-        try:
-            text, frame = action_queue.get(timeout=0.1)
-        except queue.Empty:
-            continue
-
-        # Set flag that action is in progress
-        with action_lock:
-            action_in_progress = True
-
-        try:
-            match text:
-                case 'A':
-                    print("Action for A - Starting")
-                    drone.rotate_clockwise(360)
-                    time.sleep(5)
-                    drone.rotate_clockwise(180)
-                    drone.move_forward(30)
-                    print("Action for A - Completed")
-                case 'B':
-                    print("Action for B - Starting")
-                    drone.rotate_clockwise(90)
-                    drone.move_up(30)
-                    print("Should take a photo now")
-                    # Save the current frame as an image
-                    timestamp = int(time.time())
-                    filename = f"tello_photo_{timestamp}.jpg"
-                    # Freeze the frame to avoid motion blur
-                    camera.set_freeze(True)
-                    cv2.imwrite(filename, frame)
-                    print(f"Photo saved: {filename}")
-                    camera.set_freeze(False)
-                    time.sleep(5)
-                    drone.move_forward(180)
-                    print("Action for B - Completed")
-                case 'C':
-                    print("Action for C - Starting")
-                    drone.land()
-                    # Kill the height guard
-                    if height_guard is not None:
-                        height_guard.stop()
-                        height_guard = None
-                    has_taken_off = False
-                    print("Action for C - Completed")
-                case _:
-                    print("No action for this letter")
-        except TelloException as e:
-            print(f"Drone error during action: {e}")
-        finally:
-            # Clear flag when action is complete (even if there was an error)
+            # Set flag that action is in progress
             with action_lock:
-                action_in_progress = False
-            # Clear the queue of any duplicate detections
-            while not action_queue.empty():
-                try:
-                    action_queue.get_nowait()
-                except queue.Empty:
-                    break
+                action_in_progress = True
+
+            try:
+                match text:
+                    case 'A':
+                        print("Action for A - Starting")
+                        drone.rotate_clockwise(360)
+                        time.sleep(5)
+                        drone.rotate_clockwise(180)
+                        drone.move_forward(30)
+                        print("Action for A - Completed")
+                    case 'B':
+                        print("Action for B - Starting")
+                        drone.rotate_clockwise(90)
+                        drone.move_up(30)
+                        print("Should take a photo now")
+                        # Save the current frame as an image
+                        timestamp = int(time.time())
+                        filename = f"tello_photo_{timestamp}.jpg"
+                        # Freeze the frame to avoid motion blur
+                        camera.set_freeze(True)
+                        cv2.imwrite(filename, frame)
+                        print(f"Photo saved: {filename}")
+                        camera.set_freeze(False)
+                        time.sleep(5)
+                        drone.flip_forward()
+                        drone.move_forward(30)
+                        drone.flip_left()
+                        drone.move_forward(50)
+                        drone.flip_forward()
+
+                        print("Action for B - Completed")
+                    case 'C':
+                        print("Action for C - Starting")
+                        drone.land()
+                        # Kill the height guard
+                        if height_guard is not None:
+                            height_guard.stop()
+                            height_guard = None
+                        has_taken_off = False
+                        print("Action for C - Completed")
+                    case _:
+                        print("No action for this letter")
+            except TelloException as e:
+                print(f"Drone error during action: {e}")
+            finally:
+                # Clear flag when action is complete (even if there was an error)
+                with action_lock:
+                    action_in_progress = False
+                # Clear the queue of any duplicate detections
+                while not action_queue.empty():
+                    try:
+                        action_queue.get_nowait()
+                    except queue.Empty:
+                        break
 
 
 def thread__wait_key():
