@@ -7,14 +7,15 @@ class HeightGuard:
         self.drone = config
         self.limit = limit
         self.current_height = 0
+        self.maintain_height_thread__stop_event = threading.Event()
         self.maintain_height_thread = threading.Thread(target=self._maintain_height)
         self.maintain_height_thread.daemon = True
         self.maintain_height_thread.start()
-        self.maintain_height_thread__stop_event = threading.Event()
 
     def _maintain_height(self):
         # Consistently check the height of the drone
-        while not self.maintain_height_thread__stop_event.is_set():
+        dead = self.maintain_height_thread__stop_event.is_set()
+        while not dead:
             self.drone.connect()
             height = self.drone.get_height()
             self.current_height = height
