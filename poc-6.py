@@ -118,12 +118,14 @@ def thread__handle_actions():
                         # Save the current frame as an image
                         timestamp = int(time.time())
                         filename = f"tello_photo_{timestamp}.jpg"
+                        time.sleep(5)
                         # Freeze the frame to avoid motion blur
                         camera.set_freeze(True)
+                        # Take the picture
                         cv2.imwrite(filename, frame)
                         print(f"Photo saved: {filename}")
+                        # Unfreeze
                         camera.set_freeze(False)
-                        time.sleep(5)
                         drone.flip_forward()
                         drone.move_forward(50)
                         drone.flip_left()
