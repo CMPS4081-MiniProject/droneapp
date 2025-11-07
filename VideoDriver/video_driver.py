@@ -138,11 +138,16 @@ class VideoDriver:
         for frame_data in frames:
             (frame, w, h, ls) = frame_data
             if frame is not None:
+                # Straight from the README example at:
+                # https://github.com/DaWelter/h264decoder/tree/master?tab=readme-ov-file#examples
+
                 # print 'frame size %i bytes, w %i, h %i, line_size %i' % (len(frame), w, h, ls)
 
                 frame = np.fromstring(frame, dtype=np.ubyte, count=len(frame), sep='')
                 frame = (frame.reshape((h, ls // 3, 3)))
                 frame = frame[:, :w, :]
+                # At this point `frame` references your usual height x width x RGB channels numpy array
+                # of unsigned bytes.
 
                 # Convert from RGB to BGR
                 frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
