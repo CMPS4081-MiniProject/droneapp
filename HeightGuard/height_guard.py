@@ -1,5 +1,6 @@
 from djitellopy import Tello
 import threading
+import time
 
 
 class HeightGuard:
@@ -22,6 +23,7 @@ class HeightGuard:
 
             if height < self.limit:
                 self.drone.move_up(20)
+            time.sleep(5.17)
 
     def stop(self):
         # Stop the thread

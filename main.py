@@ -107,12 +107,14 @@ def thread__handle_actions():
                     case 'A':
                         print("Action for A - Starting")
                         drone.rotate_clockwise(360)
-                        time.sleep(5)
+                        time.sleep(2)
                         drone.rotate_counter_clockwise(180)  # Turn to the right
+                        time.sleep(2)
                         drone.move_forward(30)  # 30cm forward (absolute terms - to the right of original position)
                         print("Action for A - Completed")
                     case 'B':
                         print("Action for B - Starting")
+                        time.sleep(2)
                         drone.rotate_clockwise(90)
                         drone.move_up(20)
                         print("Should take a photo now")
@@ -128,15 +130,11 @@ def thread__handle_actions():
                         # Unfreeze
                         camera.set_freeze(False)
                         drone.flip_forward()
-                        drone.move_forward(50)
+                        drone.move_forward(40)
                         drone.flip_left()
-                        drone.move_forward(50)
+                        drone.move_forward(40)
                         drone.flip_right()
-                        drone.move_forward(50)
-                        drone.flip_forward()
-                        drone.flip_right()
-                        drone.move_forward(50)  # 200cm forward so far
-                        drone.move_forward(40)  # 240cm forward so far - Should buck the wall
+                        drone.move_forward(40)
 
                         print("Action for B - Completed")
                     case 'C':   # We skip this since this is already pre-defined in the spec
@@ -222,7 +220,7 @@ def thread__wait_key():
                 print(str(drone.get_battery()) + "%")
             elif key == ord('t'):
                 drone.takeoff()
-                height_guard = HeightGuard(140, camera.drone)  # Even number - Keeps things easy to increment
+                height_guard = HeightGuard(110, camera.drone)  # Even number - Keeps things easy to increment
                 has_taken_off = True
             elif key == ord('r'):
                 if not has_taken_off:
