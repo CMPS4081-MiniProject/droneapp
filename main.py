@@ -29,7 +29,6 @@ def main():
     camera = VideoDriver()
     camera.initialize()
     drone = camera.drone
-    drone.send_rc_control(0, 0, 0, 0)
 
     # Start key handler thread
     key_thread = threading.Thread(target=thread__wait_key, daemon=True)
@@ -131,9 +130,13 @@ def thread__handle_actions():
                         camera.set_freeze(False)
                         drone.flip_forward()
                         drone.move_forward(40)
+                        time.sleep(1.75)
                         drone.flip_left()
+                        time.sleep(1.75)
                         drone.move_forward(40)
+                        time.sleep(1.75)
                         drone.flip_right()
+                        time.sleep(1.75)
                         drone.move_forward(40)
 
                         print("Action for B - Completed")
@@ -148,13 +151,16 @@ def thread__handle_actions():
                         print("Action for C - Completed")
                     case 'D':
                         print("Action for D - Starting")
+                        time.sleep(2)
                         # Move 190cm right
                         drone.move_right(190)
                         # Should find "E" now
                         print("Action for D - Completed")
                     case 'E':
                         print("Action for E - Starting")
+                        time.sleep(1.75)
                         drone.rotate_clockwise(180)  # Turn around
+                        time.sleep(2)
                         # Move backwards 240cm to original position
                         drone.move_forward(240)
                         print("Action for E - Completed")
