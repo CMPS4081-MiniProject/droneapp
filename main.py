@@ -1,3 +1,4 @@
+print("program: loading ML models...")
 import time
 from djitellopy import Tello, TelloException
 import cv2
@@ -7,7 +8,7 @@ import queue
 from VideoDriver import VideoDriver
 from HeightGuard import HeightGuard
 
-print("program: Loading ML models...")
+print("program: finished loading ML models...")
 
 camera = None
 drone = None
@@ -107,13 +108,13 @@ def thread__handle_actions():
                         print("Action for A - Starting")
                         drone.rotate_clockwise(360)
                         time.sleep(5)
-                        drone.rotate_counter_clockwise(180)
-                        drone.move_forward(30)
+                        drone.rotate_counter_clockwise(180)  # Turn to the right
+                        drone.move_forward(30)  # 30cm forward (absolute terms - to the right of original position)
                         print("Action for A - Completed")
                     case 'B':
                         print("Action for B - Starting")
                         drone.rotate_clockwise(90)
-                        drone.move_up(30)
+                        drone.move_up(20)
                         print("Should take a photo now")
                         # Save the current frame as an image
                         timestamp = int(time.time())
@@ -134,10 +135,11 @@ def thread__handle_actions():
                         drone.move_forward(50)
                         drone.flip_forward()
                         drone.flip_right()
-                        drone.move_forward(80)
+                        drone.move_forward(50)  # 200cm forward so far
+                        drone.move_forward(40)  # 240cm forward so far - Should buck the wall
 
                         print("Action for B - Completed")
-                    case 'C':
+                    case 'C':   # We skip this since this is already pre-defined in the spec
                         print("Action for C - Starting")
                         drone.land()
                         # Kill the height guard
@@ -148,17 +150,25 @@ def thread__handle_actions():
                         print("Action for C - Completed")
                     case 'D':
                         print("Action for D - Starting")
-                        drone.flip_back()
+                        # Move 190cm right
+                        drone.move_right(190)
+                        # Should find "E" now
                         print("Action for D - Completed")
                     case 'E':
                         print("Action for E - Starting")
-                        drone.move_back(50)
-                        drone.move_left(50)
+                        drone.rotate_clockwise(180)  # Turn around
+                        # Move backwards 240cm to original position
+                        drone.move_forward(240)
+                        print("Action for E - Completed")
+                        # Should find "F" now
                     case 'F':
                         print("Action for F - Starting")
-                        drone.flip_forward()
+                        # Move to the right 90cm (Center between two walls)
+                        drone.move_right(90)
                         print("Action for F - Completed")
+                        # Should find "C" now - And land
                     case 'G':
+                        # Bogus actions to waste time from here on out
                         print("Action for G - Starting")
                         drone.flip_forward()
                         drone.move_forward(40)
@@ -212,7 +222,7 @@ def thread__wait_key():
                 print(str(drone.get_battery()) + "%")
             elif key == ord('t'):
                 drone.takeoff()
-                height_guard = HeightGuard(100, camera.drone)
+                height_guard = HeightGuard(140, camera.drone)  # Even number - Keeps things easy to increment
                 has_taken_off = True
             elif key == ord('r'):
                 if not has_taken_off:
