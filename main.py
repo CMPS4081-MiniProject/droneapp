@@ -116,6 +116,8 @@ def thread__handle_actions():
                         time.sleep(2)
                         drone.rotate_clockwise(90)
                         drone.move_up(20)
+                        print("Waiting for drone to stabilize... (15s left)")
+                        time.sleep(15)
                         print("Should take a photo now")
                         # Save the current frame as an image
                         timestamp = int(time.time())
@@ -125,6 +127,7 @@ def thread__handle_actions():
                         camera.set_freeze(True)
                         # Take the picture
                         cv2.imwrite(filename, camera.frame)
+                        print(f"Saved as {filename}")
                         print(f"Photo saved: {filename}")
                         # Unfreeze
                         camera.set_freeze(False)
